@@ -17,4 +17,18 @@ $(function () {
            left: Math.round(initialPos.left)
        });
     });
+
+    win.on("resize", function () {
+       if (fixedEl.css("position") === "fixed") {
+           var wrapperPos   = wrapper.offset().left,
+               wrapperWidth = wrapper.width(),
+               fixedWidth   = (wrapperWidth / 100) * percentWidth;
+
+           fixedEl.css({
+               width: fixedWidth,
+               left: wrapperPos + wrapperWidth - fixedWidth,
+               top: article.offset().top
+           });
+       }
+    });
 });

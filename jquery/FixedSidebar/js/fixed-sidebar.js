@@ -8,4 +8,13 @@ $(function () {
         initialPos      = fixedEl.offset(),
         width           = fixedEl.width(),
         percentWidth    = 100 * width / wrapper.width();
+
+    win.one("scroll", function () {
+       fixedEl.css({
+           width: width,
+           position: "fixed",
+           top: Math.round(initialPos.top),
+           left: Math.round(initialPos.left)
+       });
+    });
 });

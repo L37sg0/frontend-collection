@@ -1,6 +1,6 @@
 $(function (){
     var numberOfPieces  = 12,
-        aspect          = "3:4",
+        aspect          = "3:3",
         aspectW         = parseInt(aspect.split(":")[0]),
         aspectH         = parseInt(aspect.split(":")[1]),
         container       = $("#puzzle"),
@@ -134,13 +134,52 @@ $(function (){
                 }
             },
             stop: function (e, ui) {
-                var current = getPosition(ui.helper);
+                var current = getPosition(ui.helper),
+                    correctPieces = 0;
 
                 if (current.top === empty.top && current.left === empty.left) {
                     empty.top = previous.top;
                     empty.left = previous.left;
                     empty.bottom = previous.top + pieceH;
                     empty.right = previous.left + pieceW;
+                }
+
+                $.each(positions, function (i) {
+                    var currentPiece = $("#" + (i + 1)),
+                        currentPosition = getPosition(currentPiece);
+
+                    if (positions[i].top === currentPosition.top && positions[i].left === currentPosition.left) {
+                        correctPieces++;
+                    }
+                });
+
+                if (correctPieces === positions.length) {
+                    clearInterval(timer);
+                    $("<p/>", {
+                        text: "Congratulations, you solved the puzzle!"
+                    }).appendTo("#ui");
+
+                    var totalSeconds = (currenTime.getHours * 60 * 60) +
+                        (currenTime.getMinutes * 60) +
+                        currenTime.seconds;
+
+                    if (localStorage.getItem("puzzleBestTime")) {
+                        var bestTime = localStorage.getItem("puzzleBestTime");
+
+                        if (totalSeconds < bestTime) {
+                            localStorage.setItem("puzzleBestTime", totalSeconds);
+
+                            $("<p/>", {
+                                text: "You got a new best time!"
+                            }).appendTo("#ui");
+                        }
+                    } else {
+                        localStorage.setItem("puzzleBestTime", totalSeconds);
+
+                        $("<p/>", {
+                            text: "You got a new best time!"
+                        }).appendTo("#ui");
+                    }
                 }
             }
         });

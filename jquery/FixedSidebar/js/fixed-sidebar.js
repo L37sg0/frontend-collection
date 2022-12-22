@@ -18,6 +18,28 @@ $(function () {
        });
     });
 
+    function scrollPage(href, scrollAmount, updateHash) {
+        if (page.scrollTop() !== scrollAmount) {
+            page.animate({
+                scrollTop: scrollAmount
+            }, 500, function () {
+                    if (updateHash) {
+                        document.location.hash = href;
+                    }
+            });
+        }
+    }
+
+    page.on("click", "aside a", function (e) {
+        e.preventDefault();
+
+        var href = $(this).attr("href"),
+            target = parseInt(href.split("#part")[1]),
+            targetOffset    = sections.eq(target - 1).offset().top;
+
+        scrollPage(href, targetOffset, true);
+    });
+
     win.on("resize", function () {
        if (fixedEl.css("position") === "fixed") {
            var wrapperPos   = wrapper.offset().left,

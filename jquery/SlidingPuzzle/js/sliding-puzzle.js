@@ -10,7 +10,7 @@ $(function (){
         piece           = $("<div/>"),
         pieceW          = Math.floor(img.width() / aspectW),
         pieceH          = Math.floor(img.height() / aspectH),
-        idContainer     = 0,
+        idCounter       = 0,
         positions       = [],
         empty           = {
             top: 0,
@@ -23,13 +23,13 @@ $(function (){
         currenTime      = {},
         timerDisplay    = container.find("#time").find("span");
 
-    for (var x = 0, y = aspectH; x < y; x++) {
-        for (var a = 0, b = aspectW; a < b; a++) {
-            var top = pieceH * x,
-                left = pieceW * a;
+    for (var y = 0, h = aspectH; y < h; y++) {
+        for (var x = 0, w = aspectW; x < w; x++) {
+            var top = pieceH * y,
+                left = pieceW * x;
 
             piece.clone()
-                .attr("id", idContainer++)
+                .attr("id", idCounter++)
                 .css({
                     width: pieceW,
                     height: pieceH,
@@ -38,8 +38,8 @@ $(function (){
                     left: left,
                     backgroundImage: ["url(", path, ")"].join(""),
                     backgroundPosition: [
-                        "-", pieceW * a,  "px",
-                        "-", pieceH * x,  "px"
+                        "-", pieceW * x,  "px ",
+                        "-", pieceH * y,  "px"
                     ].join("")
                 }).appendTo(imgContainer);
 
@@ -84,5 +84,74 @@ $(function (){
         empty.left = 0;
 
         container.find("#ui").find("p").not("#time").remove();
+
+        pieces.draggable({
+            containment: "parent",
+            grid: [pieceW, pieceH],
+            start: function (e, ui) {
+                var current = getPosition(ui.helper);
+
+                if (current.left === empty.left) {
+                    ui.helper.draggable("option", "axis", "y");
+                } else if (current.top === empty.top) {
+                    ui.helper.draggable("option", "axis", "x");
+                } else {
+                    ui.helper.trigger("mouseup");
+                    return false;
+                }
+
+                if (current.bottom < empty.top ||
+                    current.top > empty.bottom ||
+                    current.left > empty.right ||
+                    current.right < empty.left) {
+                        ui.helper.trigger("mouseup");
+                        return false;
+                }
+
+                previous.top = current.top;
+                previous.left = current.left;
+            },
+            drag: function (e, ui) {
+                var current = getPosition(ui.helper);
+
+                ui.helper.draggable("option", "revert", false);
+
+                if (current.top === empty.top && current.left === empty.left) {
+                    ui.helper.trigger("mouseup");
+                    return false;
+                }
+
+                if (current.top > empty.bottom ||
+                    current.bottom < empty.top ||
+                    current.left > empty.right ||
+                    current.right < empty.left) {
+                        ui.helper.trigger("mouseup")
+                            .css({
+                                top: previous.top,
+                                left: previous.left
+                            });
+                        return false;
+                }
+            },
+            stop: function (e, ui) {
+                var current = getPosition(ui.helper);
+
+                if (current.top === empty.top && current.left === empty.left) {
+                    empty.top = previous.top;
+                    empty.left = previous.left;
+                    empty.bottom = previous.top + pieceH;
+                    empty.right = previous.left + pieceW;
+                }
+            }
+        });
+
+        function getPosition(el) {
+            return {
+                top: parseInt(el.css("top")),
+                bottom: parseInt(el.css("top")) + pieceH,
+                left: parseInt(el.css("left")),
+                right: parseInt(el.css("left")) + pieceW
+            }
+        }
     });
 });

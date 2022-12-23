@@ -33,11 +33,19 @@ $(function () {
     page.on("click", "aside a", function (e) {
         e.preventDefault();
 
-        var href = $(this).attr("href"),
-            target = parseInt(href.split("#part")[1]),
+        var href            = $(this).attr("href"),
+            target          = parseInt(href.split("#part")[1]),
             targetOffset    = sections.eq(target - 1).offset().top;
 
         scrollPage(href, targetOffset, true);
+    });
+
+    win.on("hashchange", function () {
+        var href            = document.location.hash,
+            target          = parseInt(href.split("#part")[1]),
+            targetOffset    = (!href) ? 0 : sections.eq(target - 1).offset().top;
+
+        scrollPage(href, targetOffset, false);
     });
 
     win.on("resize", function () {

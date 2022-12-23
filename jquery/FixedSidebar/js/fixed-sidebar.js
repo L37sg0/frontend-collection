@@ -9,6 +9,16 @@ $(function () {
         width           = fixedEl.width(),
         percentWidth    = 100 * width / wrapper.width();
 
+    if (document.location.hash) {
+        var href        = document.location.hash,
+            target      = parseInt(href.split("#part")[1]),
+            targetOffset    = sections.eq(target - 1).offset().top;
+
+        page.scrollTop(0);
+        document.location.hash = "";
+        scrollPage(href, targetOffset, true);
+    }
+
     win.one("scroll", function () {
        fixedEl.css({
            width: width,

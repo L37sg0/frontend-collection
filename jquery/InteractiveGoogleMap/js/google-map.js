@@ -23,4 +23,28 @@ $(function () {
     api.event.addListener(homeMarker, "click", function () {
         infoWindow.open(map, homeMarker);
     });
+
+    var addMarker   = function (e) {
+        if (clicks <=  1) {
+            positions.push(e.latLng);
+
+            var marker = new api.Marker({
+                map: map,
+                position: e.latLng,
+                flat: (clicks === 0) ? true : false,
+                animation: api.Animation.DROP,
+                title: (clicks === 0) ? "Start" : "End",
+                icon: (clicks === 0) ? "img/start.png" : "",
+                draggable: true,
+                id: (clicks === 0) ? "Start" : "End"
+            });
+
+            api.event.trigger(map, "locationAdd", e);
+        } else {
+            api.event.removeListener(mapClick);
+            return false;
+        }
+    }
+
+    var mapClick = api.event.addListener(map, "click", addMarker);
 });

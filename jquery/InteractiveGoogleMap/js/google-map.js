@@ -39,6 +39,8 @@ $(function () {
                 id: (clicks === 0) ? "Start" : "End"
             });
 
+            api.event.addListener(marker, "dragend", markerDrag);
+
             api.event.trigger(map, "locationAdd", e);
         } else {
             api.event.removeListener(mapClick);
@@ -47,4 +49,47 @@ $(function () {
     }
 
     var mapClick = api.event.addListener(map, "click", addMarker);
+
+    api.event.addListener(map, "locationAdd", function (e) {
+        var journeyEl   = $("#journey"),
+            outer       = (journeyEl.length) ? journeyEl : $("<div>", {
+                id: "journey"
+            });
+
+        new api.Geocoder().geocode(
+            {"latLng": e.latLng},
+            function (results) {
+                $("<h3/>", {
+                    text: (clicks === 0) ? "Start" : "End"
+                }).appendTo(outer);
+
+                $("<p/>", {
+                    text: results[0].formatted_address,
+                    id: (clicks === 0) ? "StartPoint" : "EndPoint",
+                    "data-latLng": e.latLng
+                }).appendTo(outer);
+
+                if (journeyEl.length) {
+                    outer.appendTo(ui);
+                } else {
+                    $("<button/>", {
+                        id: "getQuote",
+                        text: "Get quote"
+                    }).prop("disabled", true).appendTo(journeyEl);
+                }
+
+                clicks++;
+            }
+        );
+    });
+
+    var markerDrag  = function (e) {
+        var elId = ["#", this.get("id"), "Point"].join("");
+
+        new api.Geocoder().geocode({
+            "latLng": e.latLng
+        }, function (results) {
+            $(elId).text(results[0].formatted_address);
+        });
+    };
 });

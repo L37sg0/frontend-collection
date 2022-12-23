@@ -51,24 +51,25 @@ $(function () {
     var mapClick = api.event.addListener(map, "click", addMarker);
 
     api.event.addListener(map, "locationAdd", function (e) {
-        var journeyEl   = $("#journey"),
-            outer       = (journeyEl.length) ? journeyEl : $("<div>", {
+        var journeyEl = $("#journey"),
+            outer = (journeyEl.length) ? journeyEl : $("<div>", {
                 id: "journey"
             });
 
         new api.Geocoder().geocode(
             {"latLng": e.latLng},
             function (results) {
-                $("<h3/>", {
+                $("<h3 />", {
                     text: (clicks === 0) ? "Start" : "End"
                 }).appendTo(outer);
 
-                $("<p/>", {
+                $("<p />", {
                     text: results[0].formatted_address,
                     id: (clicks === 0) ? "StartPoint" : "EndPoint",
                     "data-latLng": e.latLng
                 }).appendTo(outer);
-
+// console.log($("<p />").text());
+// console.log(results[0].formatted_address);
                 if (journeyEl.length) {
                     outer.appendTo(ui);
                 } else {
@@ -90,6 +91,23 @@ $(function () {
             "latLng": e.latLng
         }, function (results) {
             $(elId).text(results[0].formatted_address);
+            // console.log(results);
         });
     };
+
+    $("#weight").on("keyup", function () {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+
+        var field = $(this),
+            enableButton = function () {
+                if (field.val()) {
+                    $("#getQuote").removeProp("disabled");
+                } else {
+                    $("#getQuote").prop("disabled", true);
+                }
+            },
+            timeout = setTimeout(enableButton, 250);
+    });
 });

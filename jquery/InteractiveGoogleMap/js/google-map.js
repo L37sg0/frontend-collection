@@ -1,4 +1,6 @@
 $(function () {
+
+    //init vars
     var api         = google.maps,
         mapCenter   = new api.LatLng(50.91710, -1.40419),
         mapOptions  = {
@@ -11,11 +13,15 @@ $(function () {
         ui          = $("#ui"),
         clicks      = 0,
         positions   = [];
+
+    //add marker for company hq
     var homeMarker  = new api.Marker({
             position: mapCenter,
             map: map,
             icon: "img/hq.png"
     });
+
+    //define hq marker info window
     var infoWindow  = new api.InfoWindow({
         content: document.getElementById("hqInfo")
     });
@@ -24,10 +30,14 @@ $(function () {
         infoWindow.open(map, homeMarker);
     });
 
+    //function to add a marker at a clicked location
     var addMarker   = function (e) {
         if (clicks <=  1) {
+
+            //store latLng
             positions.push(e.latLng);
 
+            //add marker
             var marker = new api.Marker({
                 map: map,
                 position: e.latLng,
@@ -36,11 +46,12 @@ $(function () {
                 title: (clicks === 0) ? "Start" : "End",
                 icon: (clicks === 0) ? "img/start.png" : "",
                 draggable: true,
-                id: (clicks === 0) ? "Start" : "End"
+                id: (clicks === 0) ? "start" : "end"
             });
 
             api.event.addListener(marker, "dragend", markerDrag);
 
+            //fire locationAdd event
             api.event.trigger(map, "locationAdd", e);
         } else {
             api.event.removeListener(mapClick);
@@ -48,35 +59,41 @@ $(function () {
         }
     }
 
+    //listen for clicks on the map
     var mapClick = api.event.addListener(map, "click", addMarker);
 
+    //handle locationAdd event
     api.event.addListener(map, "locationAdd", function (e) {
         var journeyEl = $("#journey"),
             outer = (journeyEl.length) ? journeyEl : $("<div>", {
                 id: "journey"
             });
+        // console.log(journeyEl);
 
-        new api.Geocoder().geocode(
-            {"latLng": e.latLng},
-            function (results) {
+        //reverse geocode latlng to get address of place clicked
+        new api.Geocoder().geocode({"latLng": e.latLng}, function (results) {
+
+            //update UI with location
                 $("<h3 />", {
-                    text: (clicks === 0) ? "Start" : "End"
+                text: (clicks === 0) ? "Start:" : "End:"
                 }).appendTo(outer);
 
                 $("<p />", {
                     text: results[0].formatted_address,
-                    id: (clicks === 0) ? "StartPoint" : "EndPoint",
+                id: (clicks === 0) ? "startPoint" : "endPoint",
                     "data-latLng": e.latLng
                 }).appendTo(outer);
 // console.log($("<p />").text());
 // console.log(results[0].formatted_address);
                 if (journeyEl.length) {
+                    // console.log(journeyEl);
                     outer.appendTo(ui);
-                } else {
+                    //add button if second click
                     $("<button/>", {
                         id: "getQuote",
                         text: "Get quote"
                     }).prop("disabled", true).appendTo(journeyEl);
+                } else {
                 }
 
                 clicks++;
@@ -84,9 +101,11 @@ $(function () {
         );
     });
 
+    //handle markers being dragged
     var markerDrag  = function (e) {
         var elId = ["#", this.get("id"), "Point"].join("");
 
+        //reverse geocode latlng to get address of place marker dragged to
         new api.Geocoder().geocode({
             "latLng": e.latLng
         }, function (results) {
@@ -95,6 +114,7 @@ $(function () {
         });
     };
 
+    //enable button when weight entered
     $("#weight").on("keyup", function () {
         if (timeout) {
             clearTimeout(timeout);
@@ -103,11 +123,67 @@ $(function () {
         var field = $(this),
             enableButton = function () {
                 if (field.val()) {
-                    $("#getQuote").removeProp("disabled");
+                    $("#getQuote").prop("disabled", false);
                 } else {
                     $("#getQuote").prop("disabled", true);
                 }
             },
             timeout = setTimeout(enableButton, 250);
+    });
+
+    //compute distance and cost when button clicked
+    $("body").on("click", "#getQuote", function (e) {
+        e.preventDefault();
+
+        // $(this).remove();
+
+        //get distance between points
+        new api.DistanceMatrixService().getDistanceMatrix({
+            origins: [$("#startPoint").attr("data-latLng")],
+            destinations: [$("#endPoint").attr("data-latLng")],
+            travelMode: google.maps.TravelMode.DRIVING,
+            unitSystem: google.maps.UnitSystem.IMPERIAL
+        }, function (response) {
+            console.log(response);
+            console.log($("#startPoint").attr("data-latLng"), $("#endPoint").attr("data-latLng"))
+            var list        = $("<dl/>", {
+                "class": "ui-helper-clearfix",
+                id: "quote"
+            }),
+            format          = function (number) {
+                var rounded = Math.round(number * 100) / 100,
+                    fixed   = rounded.toFixed(2);
+
+                return fixed;
+            },
+                term        = $("<dt/>"),
+                desc        = $("<dd/>"),
+                // distance    = response.rows[0].elements[0].distance,
+                distance    = {
+                    text: 56
+                },
+                weight      = $("#weight").val(),
+                distanceString  = distance.text + " les",
+                distanceNum     = 56, //parseFloat(distance.text.split(" ")[0]),
+                distanceCost    = format(distanceNum * 3),
+                weightCost      = format(weight * 0.25 * distanceNum),
+                totalCost       = format(+distanceCost + +weightCost);
+            //display results
+            $("<h3>", {
+                text: "Your quote",
+                id: "quoteHeading"
+            }).appendTo(ui);
+            // console.log(ui);
+
+            term.clone().html("Distance:").appendTo(list);
+            desc.clone().text(distanceString).appendTo(list);
+            term.clone().text("Distance cost:").appendTo(list);
+            desc.clone().text("&pound" + distanceCost).appendTo(list);
+            term.clone().text("Weight cost:").appendTo(list);
+            desc.clone().text("&pound" + weightCost).appendTo(list);
+            term.clone().addClass("total").text("Total:").appendTo(list);
+            desc.clone().addClass("total").text("&pound" + totalCost).appendTo(list);
+            list.appendTo(ui);
+        });
     });
 });

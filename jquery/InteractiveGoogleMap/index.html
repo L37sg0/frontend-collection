@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Google Map</title>
+    <link rel="stylesheet" href="../css/common.css"/>
+    <link rel="stylesheet" href="css/google-map.css"/>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="ui">
+        <h1>I Am Mover</h1>
+        <p>Enter the weight of your goods bellow and click on two
+        different places on the map to see the distance between
+        them and the cost of moving your goods.</p>
+        <h3>Our charges</h3>
+        <dl class="ui-helper-clearfix">
+            <dt>Base rate (per mile)</dt>
+            <dd>&pound;3</dd>
+            <dt>Cost per kg per mile</dt>
+            <dd>&pound;0.25</dd>
+        </dl>
+        <label for="weight">Weight:</label>
+        <input name="weight" id="weight" placeholder="Weight (kg)">
+<!--        <button></button>-->
+        <div id="journey"></div>
+    </div>
+    <div id="hqInfo">
+        <img class="float-left" alt="placehold" src="https://via.placeholder.com/140x100"/>
+        <h1>I Am Mover</h1>
+        <p>This is where we are based.</p>
+        <p>Call: 0123456789</p>
+        <p>Email: info@i-am-mover.com</p>
+    </div>
+
+    <script src="../js/jquery-3.6.3.min.js"></script>
+<!--    <script src="https://maps.googleapis.com/maps/api/js"></script>-->
+<!--    <script src="https://maps.googleapis.com/maps/api/js?key=<?php echo $apiKey ?>"></script>-->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD41AKZ8-4QFR_i5WA_Iob-c2CWhsBQNso"></script>
+    <script src="../js/jquery-ui-1.13.2.custom/jquery-ui.min.js"></script>
+    <script src="js/google-map.js"></script>
+</body>
+</html>

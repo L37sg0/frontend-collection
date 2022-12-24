@@ -1,0 +1,27 @@
+article.up {
+    width: 90vw;
+    padding: 5%;
+}
+
+article.up input {
+    display: none
+}
+
+.up-drop-target {
+    height: 10em;
+    border: 5px dashed #cccccc;
+    border-radius: 5px;
+    margin-bottom: 1em;
+    text-align: center;
+}
+
+.up-drop-target h2 {
+    margin-top: -.5em;
+    position: relative;
+    top: 50%;
+}
+
+.up-selected {
+    margin: 1em 0;
+    border-bottom: 1px solid #cccccc;
+}

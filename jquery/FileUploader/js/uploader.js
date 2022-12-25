@@ -116,6 +116,13 @@
                 }
             }
         });
+
+        // uploading the selected files
+        widget.el.on("click", "a.up-upload", function (e){
+            e.preventDefault();
+
+            widget.uploadFiles();
+        });
     }
 
     // displaying the list of selected files
@@ -201,6 +208,42 @@
         var complete = Math.round((e.loaded / e.total) * 100);
 
         progress.progressbar("value", complete);
+    };
+
+    // uploading the selected files
+    Up.prototype.uploadFiles = function () {
+        var widget  = this,
+            a       = widget.el.find("a.up-upload");
+
+        if (!a.hasClass("disabled")) {
+            a.addClass("disabled");
+
+            $.each(widget.fileList, function (i, file) {
+                var fd      = new FormData(),
+                    prog    = widget.el.find("div.up-progress").eq(i);
+
+                fd.append("file-" + i,  file);
+
+                widget.allXHR.push($.ajax({
+                    type: "POST",
+                    url: "/upload.asmx/uploadFile",
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    xhr: function () {
+                        var xhr = jQuery.ajaxSettings.xhr();
+
+                        if (xhr.upload) {
+                            xhr.upload.onprogress = function (e) {
+                                widget.handleProgress(e,  prog);
+                            }
+                        }
+
+                        return xhr;
+                    }
+                }));
+            });
+        }
     };
 
     $.fn.up = function (options) {

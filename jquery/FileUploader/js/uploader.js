@@ -241,7 +241,20 @@
 
                         return xhr;
                     }
+                    // reporting success and tidying up
+                }).done(function () {
+                    var parent = prog.parent(),
+                        prev = parent.prev();
+
+                    prev.add(parent).empty();
+                    prev.text("File uploaded!");
                 }));
+            });
+
+            // reporting success and tidying up
+            $.when.apply($, widget.allXHR).done(function () {
+                widget.el.find("table").remove();
+                widget.el.find("a.up-upload").removeClass("disabled");
             });
         }
     };

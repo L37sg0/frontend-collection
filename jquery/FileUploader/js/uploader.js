@@ -182,6 +182,25 @@
         if (!container.find("table").length) {
             table.appendTo(container);
         }
+
+        widget.initProgress();
+    };
+
+    // adding jQuery UI progress indicator
+    Up.prototype.initProgress = function () {
+        this.el.find("div.up-progress").each(function () {
+            var el = $(this);
+
+            if (!el.hasClass("ui-progressbar")) {
+                el.progressbar();
+            }
+        });
+    };
+
+    Up.prototype.handleProgress = function (e, progress) {
+        var complete = Math.round((e.loaded / e.total) * 100);
+
+        progress.progressbar("value", complete);
     };
 
     $.fn.up = function (options) {

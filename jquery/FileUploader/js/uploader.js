@@ -1,3 +1,4 @@
+// plugin wrapper
 ;(function ($) {
     var defaults    = {
         strings: {
@@ -21,6 +22,7 @@
         this.allXHR     = [];
     }
 
+    // generating underlying markup
     Up.prototype.init = function () {
         var widget  = this,
             strings = widget.config.strings,
@@ -59,10 +61,11 @@
 
         widget.el.append(container);
 
+        // adding event handlers for receiving files to upload
         widget.el.on("click", "a.up-choose", function (e) {
             e.preventDefault();
 
-            widget.el.find("input [type='file']").click();
+            widget.el.find("input[type='file']").click();
         });
 
         widget.el.on("drop change dragover", "article.up", function (e) {
@@ -82,7 +85,104 @@
 
             widget.handleFiles();
         });
+
+        // removing files from the upload list
+        widget.el.on("click", "td a", function (e) {
+            var removeAll   = function () {
+                widget.el.find("table").remove();
+                widget.el.find("input[type='file']").val("");
+                widget.fileList = [];
+            };
+
+            if (e.originalEvent.target.className == "up-remove-all") {
+                removeAll();
+            } else {
+                var link        = $(this),
+                    removed,
+                    filename    = link.closest("tr").children().eq(1).text();
+
+                link.closest("tr").remove();
+
+                $.each(widget.fileList, function (i, item) {
+                    if (item.name === filename) {
+                        removed = i;
+                    }
+                });
+
+                widget.fileList.splice(removed, 1);
+
+                if (widget.el.find("tr").length === 1) {
+                    removeAll();
+                }
+            }
+        });
     }
+
+    // displaying the list of selected files
+    Up.prototype.handleFiles = function () {
+        var widget      = this,
+            container   = widget.el.find("div.up-selected"),
+            row         = $("<tr/>"),
+            cell        = $("<td/>"),
+            remove      = $("<a/>", {
+                href: "#"
+            }),
+            table;
+
+        if (!container.find("table").length) {
+            table       = $("<table/>");
+
+            var header  = row.clone().appendTo(table),
+                strings = widget.config.strings.tableHeadings;
+
+            $.each(strings, function (i, strings) {
+                var cs      = strings.toLowerCase().replace(/\s/g, "_"),
+                    newCell = cell.clone()
+                        .addClass("up-table-head " + cs)
+                        .appendTo(header);
+
+                if (i === strings.length - 1) {
+                    var clear   = remove.clone()
+                        .text(strings)
+                        .addClass("up-remove-all");
+
+                    newCell.html(clear).attr("colspan", 2);
+                } else {
+                    newCell.text(strings);
+                }
+            });
+        } else {
+            table   = container.find("table");
+        }
+
+        $.each(widget.files, function (i, file) {
+            var fileRow     = row.clone(),
+                filename    = file.name.split("."),
+                ext         = filename[filename.length - 1],
+                del         = remove.clone()
+                    .text("x")
+                    .addClass("up-remove");
+
+            cell.clone().addClass("icon " + ext).appendTo(fileRow);
+
+            cell.clone().text(file.name).appendTo(fileRow);
+
+            cell.clone().text((Math.round(file.size / 1024)) + " kb")
+                .appendTo(fileRow);
+
+            cell.clone().html(del).appendTo(fileRow);
+
+            cell.clone().html("<div class='up-progress'/>").appendTo(fileRow);
+
+            fileRow.appendTo(table);
+
+            widget.fileList.push(file);
+        });
+
+        if (!container.find("table").length) {
+            table.appendTo(container);
+        }
+    };
 
     $.fn.up = function (options) {
         new Up(this, options).init();

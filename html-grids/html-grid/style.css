@@ -1,0 +1,46 @@
+svg{
+    width:100%;
+    opacity:1;
+}
+#one:hover,#two:hover,#three:hover,#four:hover
+{
+    r:35;	
+}
+body{
+    width:100%;
+    height:100%;
+    background-color:black;
+}
+.title{
+    color:orange;
+    font-size:200%;
+    grid-area:header;
+    self-align:stretch;
+    self-justify:stretch;
+}
+.menu{
+    grid-area:sidebar;
+    self-justify:stretch;
+    self-align:stretch;
+    background-color:grey;
+    background-opacity:0.2;
+}
+.article{
+    grid-area:article;
+    self-justify:stretch;
+    self-align:stretch;
+    background-color:orange;
+    color:black;
+    font-size:200%;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:90px auto;
+    grid-template-rows:auto;
+    grid-column-gap:10px;
+    grid-row-gap:10px;
+    grid-template-areas:
+        "header header"
+        "sidebar article"
+        "footer footer"
